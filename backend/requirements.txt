@@ -1,5 +1,5 @@
 flask
 flask-cors
-hyperon==0.2.2
+git+https://github.com/eyuel693/hyperon.git@0.2.2
 gunicorn
 regex
