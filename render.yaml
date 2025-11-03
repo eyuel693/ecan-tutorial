@@ -2,9 +2,11 @@ services:
   - type: web
     name: attention-backend
     env: python
+    pythonVersion: "3.12"
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: python3 app.py
+    autoDeploy: true
 
   - type: web
     name: attention-frontend
