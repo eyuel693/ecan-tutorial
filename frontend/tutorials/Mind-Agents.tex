@@ -1,0 +1,534 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\setstretch{1.25}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{mdframed}
+\usepackage{array, booktabs, multirow}
+\usepackage{caption}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Define Colors
+\definecolor{lightblue}{rgb}{0.90, 0.95, 1.0}
+\definecolor{deepblue}{rgb}{0.2, 0.4, 0.7}
+\definecolor{codebg}{rgb}{0.96, 0.96, 0.96}
+\definecolor{forestgreen}{rgb}{0.13, 0.55, 0.13}
+
+% MeTTa Code Environment
+\lstnewenvironment{metta}[1][]{
+    \lstset{
+        language=Lisp,
+        basicstyle=\small\ttfamily\color{deepblue},
+        backgroundcolor=\color{codebg},
+        frame=single,
+        framesep=3mm,
+        xleftmargin=5mm,
+        xrightmargin=5mm,
+        breaklines=true,
+        showstringspaces=false,
+        numbers=left,
+        numberstyle=\tiny\color{gray},
+        #1
+    }
+}{}
+
+% Custom Environments
+\newenvironment{important}[1][]{
+    \begin{tcolorbox}[
+        colback=red!5!white,
+        colframe=red!75!black,
+        title=#1,
+        fonttitle=\bfseries
+    ]
+}{\end{tcolorbox}}
+
+\newenvironment{definition}[1][]{
+    \begin{tcolorbox}[
+        colback=blue!5!white,
+        colframe=blue!75!black,
+        title=#1,
+        fonttitle=\bfseries
+    ]
+}{\end{tcolorbox}}
+
+\title{Attention Agents}
+\author{ECAN Team}
+\date{October 12, 2025}
+\order{4}
+\begin{document}
+\maketitle
+
+\section{Introduction to Attention Agents}
+
+\subsection{Overview}
+Attention Agents form the dynamic processing core of the ECAN architecture, implementing the economic principles that govern attention allocation in cognitive systems. These autonomous agents operate on the attention bank to maintain system stability, enable learning, and manage cognitive resources efficiently.
+
+\subsection{Core Agent Types}
+\begin{itemize}
+\item \textbf{Importance Diffusion Agents}: Spread attention values through associative networks
+\item \textbf{Hebbian Learning Agents}: Create and strengthen connections between co-active concepts
+\item \textbf{Rent Collection Agents}: Implement time-based attention decay
+\item \textbf{Forgetting Agent}: Manages memory through selective removal of low-importance knowledge
+\end{itemize}
+
+\section{Agent Architecture}
+
+\subsection{Unified Agent Framework}
+All attention agents adhere to a consistent architectural pattern ensuring maintainability and interoperability:
+
+\begin{verbatim}
+;; Standard Agent Execution Pattern
+(= (AgentName-Run $parameters)
+    (do
+        ;; 1. Parameter Retrieval and Validation
+        ($param (getAttentionParam PARAM_NAME))
+        (validate-parameters $param)
+        
+        ;; 2. Context-Aware Target Selection  
+        ($targets (select-targets-function $context))
+        (filter-targets $targets $constraints)
+        
+        ;; 3. Core Economic Operations
+        (process-targets $targets $param)
+        (maintain-economic-balance)
+        
+        ;; 4. System State Updates and Monitoring
+        (update-system-state)
+        (log-agent-activity $targets $results)
+    )
+)
+\end{verbatim}
+
+
+\section{Importance Diffusion Agents}
+Importance Diffusion Agents implement activation spreading through associative networks, modeling the fundamental cognitive process of attention propagation in biological neural systems. These agents enable information to flow from highly activated concepts to related concepts, facilitating pattern completion and associative reasoning.
+
+\subsection{Base Diffusion Implementation}
+The core diffusion algorithm provides the computational foundation for both attentional focus and whole-atomspace variants and implements sophisticated probability-based STI distribution:
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:ImportanceDiffusionAgent:ImportanceDiffusionBase:ImportanceDiffusionBase)
+\end{verbatim}
+
+\subsection{AF Importance Diffusion Agent}
+
+The AF Importance Diffusion Agent operates exclusively on atoms within the working memory buffer, facilitating rapid information exchange among currently active concepts. This agent enables focused, intensive processing of relevant information.
+
+\textbf{Operational Characteristics:}
+
+\begin{itemize}
+\item \textbf{Source}: High-STI atoms currently in attentional focus
+\item \textbf{Target}: Connected atoms reachable through associative links
+\item \textbf{Amount}: Proportional to source STI and MAX\_SPREAD\_PERCENTAGE
+\item \textbf{Frequency}: Executes each cognitive cycle on active content
+\end{itemize}
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:ImportanceDiffusionAgent:AFImportanceDiffusionAgent:AFImportanceDiffusionAgent)
+
+;; Execute AF Diffusion with Context
+(AFImportanceDiffusionAgent-Run (attentionalFocus) (TypeSpace) $executionContext)
+\end{verbatim}
+
+\subsection{WA Importance Diffusion Agent}
+Operates on atoms outside the Attentional Focus:
+
+\begin{itemize}
+\item \textbf{Source}: Randomly selected atoms not in current focus
+\item \textbf{Target}: Local associative neighborhoods
+\item \textbf{Amount}: Based on diffusedValue calculations and current activation levels
+\item \textbf{Purpose}: Maintains background activation and enables latent retrieval
+\end{itemize}
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:ImportanceDiffusionAgent:WAImportanceDiffusionAgent:WAImportanceDiffusionAgent)
+
+;; Execute WA Diffusion  
+(WAImportanceDiffusionAgent-Run (TypeSpace))
+\end{verbatim}
+
+\subsection{Diffusion Algorithm Specification}
+
+\subsubsection{Probability Calculation Framework}
+The diffusion probability distribution integrates multiple factors using a weighted combination approach:
+
+\begin{align}
+P_{\text{total}}(t|s) &= \lambda \cdot P_{\text{incident}}(t|s) + (1-\lambda) \cdot P_{\text{hebbian}}(t|s) \\ \\
+P_{\text{incident}}(t|s) &= \frac{1}{|\mathcal{N}(s)|} \quad \text{(Uniform distribution)} \\
+P_{\text{hebbian}}(t|s) &= \frac{\text{TV}_{\text{strength}}(s,t) \cdot \text{TV}_{\text{confidence}}(s,t)}{\sum_{t'\in\mathcal{H}(s)} \text{TV}_{\text{strength}}(s,t') \cdot \text{TV}_{\text{confidence}}(s,t')}
+\end{align}
+
+Where λ is controlled by HEBBIAN\_MAX\_ALLOCATION\_PERCENTAGE parameter, balancing structural versus associative influences.
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:ImportanceDiffusionAgent:AFImportanceDiffusionAgent:AFImportanceDiffusionAgent)
+!(AFImportanceDiffusionAgent-Run (attentionalFocus) (TypeSpace))
+\end{verbatim}
+
+\section{Hebbian Learning Agents}
+
+Hebbian Learning Agents implement the fundamental neuropsychological principle formalized as: "When an axon of cell A is near enough to excite cell B and repeatedly or persistently takes part in firing it, some growth process or metabolic change takes place in one or both cells such that A's efficiency, as one of the cells firing B, is increased." This principle underlies associative learning in biological neural systems.
+
+\subsection{Hebbian Creation Agent}
+Creates new associative links between co-activated concepts following optimal network formation strategies:
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:AttentionParam)
+!(import! &self metta-attention:attention-bank:utilities:helper-functions)
+!(import! &self metta-attention:attention-bank:attention-value:getter-and-setter)
+!(import! &self metta-attention:attention-bank:bank:atom-bins:atombins)
+!(import! &self metta-attention:attention-bank:bank:attention-bank)
+!(import! &self metta-attention:attention-bank:bank:attentional-focus:attentional-focus)
+!(import! &self metta-attention:attention-bank:bank:importance-index:importance-index)
+!(import! &self metta-attention:attention-bank:utilities:recentVal)
+!(import! &self metta-attention:attention:Neighbors)
+!(import! &self metta-attention:attention:HebbianCreationAgent:HebbianCreationAgent)
+
+;; Step 1: Create concepts that are active together
+!(add-atom &typeSpace (Coffee (AV 800 600 0)))
+!(add-atom &typeSpace (Morning (AV 750 500 0)))
+!(add-atom &typeSpace (Energy (AV 700 400 0)))
+
+;; Step 2: Put them in attentional focus (thinking about them together)
+!(add-atom &attentionalFocus Coffee)
+!(add-atom &attentionalFocus Morning)
+!(add-atom &attentionalFocus Energy)
+
+;; Step 3: Mark them as newly activated
+!(add-atom &newAtomInAV Coffee)
+!(add-atom &newAtomInAV Morning)
+!(add-atom &newAtomInAV Energy)
+
+!(assertEqual (collapse (get-atoms &attentionalFocus)) (Coffee Morning Energy))
+!(assertEqual (collapse (get-atoms &newAtomInAV)) (Coffee Morning Energy))
+
+;; Step 4: Run Hebbian Creation - forms associations between co-active concepts
+!(HebbianCreationAgent-Run &typeSpace &attentionalFocus &newAtomInAV)
+
+!(assertEqual (collapse (get-atoms &newAtomInAV)) ())
+
+!(match &typeSpace ((ASYMMETRIC_HEBBIAN_LINK $from $to) $value)
+       ("  " $from " → " $to))
+
+!(assertEqual 
+    (match &typeSpace ((ASYMMETRIC_HEBBIAN_LINK Coffee Morning) $value) true)
+    true)
+
+\end{verbatim}
+
+\subsubsection{Link Creation Strategies}
+The agent employs multiple link formation strategies to build effective associative networks:
+
+\begin{itemize}
+\item \textbf{Local Links} connect atoms currently in attentional focus, strengthening working memory associations and enabling coherent thought patterns.
+\item \textbf{Far Links} connect AF atoms with relevant external concepts, enabling cross-contextual reasoning and knowledge integration across domains.
+\item \textbf{Ratio Control} uses the LOCAL\_FAR\_LINK\_RATIO parameter to balance local versus distant connection formation, optimizing for both focus and breadth.
+\item \textbf{Limit Enforcement} applies MAX\_LINK\_NUM constraints to prevent combinatorial explosion and maintain computational efficiency as the network grows.
+\end{itemize}
+
+\subsection{Hebbian Updating Agent}
+Strengthens existing connections based on continued co-occurrence and usage patterns:
+
+\begin{verbatim}
+!(import! &self backend:metta-attention:attention-bank:attention-value:getter-and-setter)
+!(import! &self backend:metta-attention:attention:HebbianUpdatingAgent:HebbianUpdatingAgent)
+!(import! &self backend:metta-attention:attention-bank:bank:atom-bins:atombins)
+!(import! &self backend:metta-attention:attention-bank:bank:attention-bank)
+!(import! &self backend:metta-attention:attention-bank:bank:attentional-focus:attentional-focus)
+!(import! &self backend:metta-attention:attention-bank:bank:importance-index:importance-index)
+!(import! &self backend:metta-attention:attention-bank:utilities:recentVal)
+!(import! &self backend:metta-attention:attention:HebbianUpdatingAgent:HebbianUpdatingAgent)
+!(import! &self backend:metta-attention:attention:AttentionParam)
+!(import! &self backend:metta-attention:attention-bank:utilities:recentVal)
+
+!(import! &self backend:metta-attention:attention-bank:utilities:helper-functions)
+
+!(setStv source (0.1 0.9))
+!(setStv target1 (0.1 0.9))
+!(setStv target2 (0.1 0.9))
+
+!(setStv (ASYMMETRIC_HEBBIAN_LINK source target1) (0.01 0.9))
+!(setStv (ASYMMETRIC_HEBBIAN_LINK source target2) (0.01 0.9))
+
+!(stimulate source 100)
+!(stimulate target1 200)
+!(stimulate target2 300)
+
+!(updateHebbianLinks source (TypeSpace))
+
+!(println "Updated mean for (source → target1):" (getMean (ASYMMETRIC_HEBBIAN_LINK source target1)))
+!(println "Updated mean for (source → target2):" (getMean (ASYMMETRIC_HEBBIAN_LINK source target2)))
+
+; Simple condition check
+!(assertEqual
+  (if (>= (getMean (ASYMMETRIC_HEBBIAN_LINK source target1)) 0.0105)
+      True
+      False)
+  True)
+
+!(assertEqual
+  (if (>= (getMean (ASYMMETRIC_HEBBIAN_LINK source target2)) 0.0105)
+      True
+      False)
+  True)
+!( " Hebbian update test passed!")
+\end{verbatim}
+
+\subsubsection{Strength Calculation Formalism}
+Link strength updates employ target conjunction formulas that integrate both current activation levels and historical strength:
+\[
+\text{newStrength}_{s,t} = \frac{\text{STI}_s \times \text{STI}_t \times \text{currentStrength}_{s,t}}{\text{normalizationFactor} + \epsilon}
+\]
+
+\section{Rent Collection Agents}
+
+Rent Collection Agents implement time-based attention decay, simulating the natural fading of importance in biological cognitive systems and preventing infinite value accumulation that would destabilize the attention economy. This mechanism ensures that attention resources remain fluid and responsive to changing environmental demands.
+
+\subsection{AF Rent Collection Agent}The \textbf{AFRentCollectionAgent} implements time-based STI and LTI decay for atoms in the attentional focus or
+Applies time-based decay specifically to atoms in attentional focus. 
+
+\begin{verbatim}
+!(import! &self backend:metta-attention:attention-bank:attention-value:getter-and-setter)
+!(import! &self backend:metta-attention:attention:HebbianUpdatingAgent:HebbianUpdatingAgent)
+!(import! &self backend:metta-attention:attention-bank:bank:atom-bins:atombins)
+!(import! &self backend:metta-attention:attention-bank:bank:attention-bank)
+!(import! &self backend:metta-attention:attention-bank:bank:attentional-focus:attentional-focus)
+!(import! &self backend:metta-attention:attention-bank:bank:importance-index:importance-index)
+!(import! &self backend:metta-attention:attention-bank:utilities:recentVal)
+!(import! &self backend:metta-attention:attention:HebbianUpdatingAgent:HebbianUpdatingAgent)
+!(import! &self backend:metta-attention:attention:AttentionParam)
+!(import! &self backend:metta-attention:attention-bank:utilities:recentVal)
+
+!(import! &self backend:metta-attention:attention-bank:utilities:helper-functions)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:RentCollectionBaseAgent:RentCollectionBaseAgent)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:AFRentCollectionAgent:AFRentCollectionAgent)
+
+;--- Stimulate atoms ---
+!(stimulate b 3000)
+!(stimulate c 1500)
+!(stimulate d 290)
+
+!(assertEqual (getSti b) 60000)
+!(assertEqual (getSti c) 30000)
+!(assertEqual (getSti d) 2900)
+
+;--- Run Rent Collection (decay) ---
+!(AFRentCollectionAgent-run)
+! ((py-atom time.sleep) 0.1)
+!(AFRentCollectionAgent-run)
+
+;--- Verify reduced STI ---
+!(assertEqual (approxEqual (getSti b) 59998.7 2) True)
+!(assertEqual (approxEqual (getSti c) 29998.7 2) True)
+!(assertEqual (approxEqual (getSti d) 2898.7 2) True)
+
+!( " Rent Collection Test Passed")
+
+\end{verbatim}
+
+\subsection{Temporal Management System}
+The rent collection system employs sophisticated temporal accounting:
+
+\begin{itemize}
+\item \textbf{Frequency Control}: AFRentFrequency parameter determines collection intervals
+\item \textbf{Real-time Tracking}: Uses system timestamps for precise timing
+\item \textbf{Proportional Decay}: Rent amount scales with elapsed time
+\item \textbf{Value Protection}: Prevents negative STI/LTI values
+\end{itemize}
+
+\subsection{WA Rent Collection Agent}
+WA Rent Collection Agent (Whole AtomSpace Rent Collection Agent) is the system-wide economic regulator that collects "attention rent" from atoms across the entire AtomSpace to maintain long-term economic balance and prevent attention hoarding. And Collects \textbf{Long-Term Importance (LTI)} rent from atoms throughout the AtomSpace to regulate knowledge persistence.
+
+\textbf{Purpose:}
+
+\begin{itemize}[leftmargin=*]
+  \item Maintains sustainability of the system’s long-term knowledge economy.
+  \item Adjusts LTI values over time, reflecting the evolving significance of information.
+\end{itemize}
+
+\begin{verbatim}
+!(register-module! ../metta-attention)
+!(import! &self metta-attention:attention-bank:bank:atom-bins:get-min-max-content)
+!(import! &self backend:metta-attention:attention-bank:attention-value:getter-and-setter)
+!(import! &self backend:metta-attention:attention:HebbianUpdatingAgent:HebbianUpdatingAgent)
+!(import! &self backend:metta-attention:attention-bank:bank:atom-bins:atombins)
+!(import! &self backend:metta-attention:attention-bank:bank:attention-bank)
+!(import! &self backend:metta-attention:attention-bank:bank:attentional-focus:attentional-focus)
+!(import! &self backend:metta-attention:attention-bank:bank:importance-index:importance-index)
+!(import! &self backend:metta-attention:attention-bank:utilities:recentVal)
+!(import! &self backend:metta-attention:attention:AttentionParam)
+
+!(import! &self backend:metta-attention:attention-bank:utilities:helper-functions)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:RentCollectionBaseAgent:RentCollectionBaseAgent)
+!(import! &self backend:metta-attention:attention-bank:bank:stochastic-importance-diffusion:stochastic-importance-diffusion)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:AFRentCollectionAgent:AFRentCollectionAgent)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:WARentCollectionAgent:WARentCollectionAgent)
+
+
+!(updateAttentionParam MAX_AF_SIZE 4)
+!(assertEqual (getAttentionParam MAX_AF_SIZE) 4)
+
+!(stimulate b 3000)
+!(stimulate c 1500)
+!(stimulate d 290)
+!(stimulate (Hebbianlink a b) 50)
+!(stimulate (Hebbianlink (Hebbianlink c d) (Hebbianlink c b)) 5)
+
+!(assertEqual (getSti (Hebbianlink (Hebbianlink c d) (Hebbianlink c b))) 33.725)
+
+!(WARentCollectionAgent-Run)
+!((py-atom time.sleep) 0.9)
+!(WARentCollectionAgent-Run)
+
+!(assertEqual (< (getSti (Hebbianlink (Hebbianlink c d) (Hebbianlink c b))) 33.725) True)
+
+!(println " WA Rent Collection Test Passed")
+\end{verbatim}
+
+\section{Forgetting Agent}
+
+\subsection{Memory Management Theory}
+The forgetting Agent is an agent responsible for removeing atoms of any kind from the all relevant spaces available. The agent uses the value of the static parameter of ForgetThresold and removes all atoms with STI values below this and leaves a certain number of atoms free based on the maxSize and accDivSize parametters.
+
+\subsection{Forgetting Agent Algorithm}
+
+\textbf{Input:} All atoms from AtomBin Space \\
+\textbf{Output:} Selective removal of low-importance atoms
+
+\begin{enumerate}
+    \item \textbf{Filter:} Extract atoms with LTI < \texttt{ForgetThreshold}
+    \item \textbf{Sort:} Order filtered atoms by LTI (ascending) + mean values
+    \item \textbf{Evaluate:} Apply removal constraints:
+    \begin{itemize}
+        \item LTI below threshold
+        \item Within \texttt{maxSize} and \texttt{accDivSize} limits 
+        \item No non-Hebbian link dependencies 
+    \end{itemize}
+    \item \textbf{Remove:} Delete qualifying atoms + their Hebbian links
+    \item \textbf{Archive:} Store removed atoms in dedicated space
+\end{enumerate}
+
+\textbf{Result:} Optimized memory usage while preserving critical knowledge structures.
+
+\subsection{Multi-Criteria Atom Selection}
+The agent employs a sophisticated multi-stage selection process:
+
+\begin{itemize}
+    \item \textbf{Primary Criterion - LTI Value}: Atoms with lowest Long-Term Importance are considered first, as LTI directly measures long-term significance and utility.
+    \item \textbf{Secondary Criterion - Truth Confidence}: Among atoms with similar LTI, those with lowest confidence values are prioritized, implementing uncertainty reduction principles.
+    \item \textbf{Absolute Protection - VLTI Status}: Atoms with VLTI = 1 are completely immune to forgetting, ensuring critical knowledge conservation regardless of other factors.
+    \item \textbf{Network Connectivity Analysis}: Isolated atoms with only Hebbian connections are preferred for removal over structurally important atoms with diverse relationship types.
+\end{itemize}
+
+\subsection{Global Removal Process Specification}
+The forgetting process follows a rigorous multi-phase protocol:
+
+\begin{itemize}
+    \item \textbf{Value Refund Phase} returns STI/LTI to attention funds maintaining strict economic conservation and preventing resource leakage.
+    \item \textbf{Archive Storage Phase} moves removed atoms to dedicated removal space with zeroed values, enabling potential recovery and system analysis.
+    \item \textbf{Space Cleanup Phase} performs atomic removal from all attention structures ensuring consistency across the entire cognitive architecture.
+    \item \textbf{Dependency Resolution Phase} handles recursive processing of dependent links and relationships, preventing orphaned structures and maintaining network integrity.
+    \item \textbf{System Validation Phase} conducts post-removal integrity checking and state verification, ensuring the system remains in a consistent and operational state.
+\end{itemize}
+
+\begin{verbatim}
+!(import! &self metta-attention:attention-bank:bank:atom-bins:get-min-max-content)
+!(import! &self backend:metta-attention:attention-bank:attention-value:getter-and-setter)
+!(import! &self backend:metta-attention:attention:HebbianUpdatingAgent:HebbianUpdatingAgent)
+!(import! &self backend:metta-attention:attention-bank:bank:atom-bins:atombins)
+!(import! &self backend:metta-attention:attention-bank:bank:attention-bank)
+!(import! &self backend:metta-attention:attention-bank:bank:attentional-focus:attentional-focus)
+!(import! &self backend:metta-attention:attention-bank:bank:importance-index:importance-index)
+!(import! &self backend:metta-attention:attention-bank:utilities:recentVal)
+!(import! &self backend:metta-attention:attention:AttentionParam)
+
+!(import! &self backend:metta-attention:attention-bank:utilities:helper-functions)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:RentCollectionBaseAgent:RentCollectionBaseAgent)
+!(import! &self backend:metta-attention:attention-bank:bank:stochastic-importance-diffusion:stochastic-importance-diffusion)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:AFRentCollectionAgent:AFRentCollectionAgent)
+!(import! &self backend:metta-attention:attention:RentCollectionAgent:WARentCollectionAgent:WARentCollectionAgent)
+!(import! &self backend:metta-attention:attention:ForgettingAgent:ForgettingAgent)
+!(updateAttentionParam FORGET_THRESHOLD 5)
+
+!(stimulate a 1)
+!(stimulate b 0.4)
+!(stimulate c 0.2)
+
+!(setStv (ASYMMETRIC_HEBBIAN_LINK a b) (0.5 0.45))
+!(stimulate (SYMMETRIC_HEBBIAN_LINK a b) 2)
+
+!(forgettingAgent-Run (atomBin))
+
+(getAtomsInTypeSpace)
+   
+\end{verbatim} 
+
+\section{Attention Parameter Management}
+
+The \textbf{AttentionParam} system provides centralized configuration for all agent behaviors through a dedicated parameter space. It defines operational limits, diffusion dynamics, and timing rules that shape the ECAN attention economy.
+
+\subsection{Parameter Categories}
+
+\textbf{1. Focus Management}
+
+\begin{itemize}[noitemsep]
+    \item \texttt{AF\_SIZE}, \texttt{MIN\_AF\_SIZE}, \texttt{MAX\_AF\_SIZE} – Control the attentional focus size and its boundaries.
+\end{itemize}
+
+\textbf{2. Diffusion Control}
+
+\begin{itemize}[noitemsep]
+    \item \texttt{MAX\_SPREAD\_PERCENTAGE}, \texttt{HEBBIAN\_MAX\_ALLOCATION\_PERCENTAGE} – Regulate how much importance spreads between atoms.
+\end{itemize}
+
+\textbf{3. Economic Parameters}
+
+\begin{itemize}[noitemsep]
+    \item \texttt{FUNDS\_STI}, \texttt{FUNDS\_LTI}, \texttt{STI\_ATOM\_WAGE}, \texttt{LTI\_ATOM\_WAGE} – Define how attention values circulate as economic resources.
+\end{itemize}
+
+\textbf{4. Timing Control}
+
+\begin{itemize}[noitemsep]
+    \item \texttt{AFRentFrequency}, \texttt{TC\_DECAY\_RATE} – Control how often agents execute and how fast attention decays.
+\end{itemize}
+
+\textbf{5. Memory Management}
+
+\begin{itemize}[noitemsep]
+    \item \texttt{FORGET\_THRESHOLD}, \texttt{MAX\_SIZE}, \texttt{ACC\_DIV\_SIZE} – Define forgetting limits and memory size control.
+\end{itemize}
+
+\subsection{Parameter Access Interface}
+All parameters are stored in a dedicated MeTTa space \texttt{\&attentionParam}.  
+They use simple tuple storage, enabling fast and efficient access by any agent.
+
+\textbf{Source:} \texttt{attention/AttentionParam.metta (lines 1–62)}
+
+
+\section{Agent Coordination and Execution}
+
+Agents can be executed independently or as part of coordinated frameworks. Each follows a standardized operational cycle combining parameter retrieval, space access, and state updates.
+
+\subsection{Agent Execution Pattern}
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Parameter Retrieval:} The agent queries \texttt{AttentionParam} for configuration values.
+    \item \textbf{Space Access:} It connects to appropriate spaces such as \texttt{attentionalFocus}, \texttt{TypeSpace}, or \texttt{atomBin}.
+    \item \textbf{Target Selection:} The agent selects atoms for processing based on defined criteria.
+    \item \textbf{Atomic Operations:} Performs updates on STI/LTI values and structural relations.
+    \item \textbf{State Updates:} Maintains consistency by synchronizing changes across spaces.
+\end{enumerate}
+
+This architecture supports both isolated testing of agents and full-scale coordinated execution in complex attention dynamics experiments.
+\end{document}

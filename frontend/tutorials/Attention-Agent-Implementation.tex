@@ -1,0 +1,197 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+
+% ----------- layout & geometry -----------
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\setstretch{1.25}
+
+% ----------- core mathematics -----------
+\usepackage{amsmath}   % align, split, cases, etc.
+\usepackage{amssymb}   % \mathbb, \mathcal, \leqslant, \geqslant ...
+\usepackage{amsfonts}  % blackboard bold, fraktur if desired
+
+% ----------- graphics & colors -----------
+\usepackage{graphicx}  % for figures
+\usepackage{xcolor}    % for colors
+
+% ----------- tables & arrays ------------
+\usepackage{array}     % extended column specifiers in tabular
+\usepackage{booktabs}  % nicer horizontal rules
+\usepackage{multirow}  % multi-row cells
+
+% ----------- code listings ------------
+\usepackage{listings}  % for code examples
+
+% ----------- boxes & frames -----------
+\usepackage{tcolorbox}
+\usepackage{mdframed}  % for boxed content
+
+% ----------- lists & enum -----------
+\usepackage{enumitem}  % for list customization
+
+% ----------- fonts -----------
+\usepackage{noto}      % Noto font
+
+% ----------- hyperref (load last) -----------
+\usepackage{hyperref}  % clickable cross-refs
+
+% ---------- Define Colors ----------
+\definecolor{lightblue}{rgb}{0.90, 0.95, 1.0}
+\definecolor{deepblue}{rgb}{0.2, 0.4, 0.7}
+\definecolor{codebg}{rgb}{0.96, 0.96, 0.96}
+
+% ---------- MeTTa Code Environment ----------
+\lstnewenvironment{metta}[1][]{
+    \lstset{
+        language=Lisp,
+        basicstyle=\small\ttfamily,
+        backgroundcolor=\color{codebg},
+        frame=single,
+        framesep=3mm,
+        xleftmargin=5mm,
+        xrightmargin=5mm,
+        breaklines=true,
+        showstringspaces=false,
+        #1
+    }
+}{}
+
+\title{Attention Agent Implementation}
+\author{ECAN Team}
+\order{5}
+\date{October 12, 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Attention Agent Implementation}
+
+\subsection{Overview}
+The Attention Agent subsystem dynamically manages the ECAN attention economy. It regulates how Short-Term Importance (STI) and Long-Term Importance (LTI) values evolve within the Atomspace.
+
+Three main agent types maintain this economy:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Importance Diffusion Agents} – Spread STI between related atoms.
+    \item \textbf{Rent Collection Agents} – Apply time-based decay to STI/LTI values.
+    \item \textbf{Forgetting Agents} – Remove low-importance atoms to control memory size.
+\end{itemize}
+
+These ensure energy flow, decay, and selective forgetting within the cognitive system.
+
+\subsection{Agent Architecture}
+The Attention Agent framework models a cognitive economy where STI and LTI flow between atoms via associative relationships. Each agent type operates in a specific domain and is triggered differently.
+
+\textbf{Agent Types:}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{AF Diffusion:} Spreads STI within attentional focus (triggered each cycle).
+    \item \textbf{WA Diffusion:} Spreads STI outside attentional focus (triggered each cycle).
+    \item \textbf{AF Rent Collection:} Applies time-based decay (triggered by time).
+    \item \textbf{Forgetting Agent:} Removes low-LTI atoms (triggered by memory size).
+\end{itemize}
+
+\textbf{Core Mechanisms:}
+
+\begin{itemize}[noitemsep]
+    \item Value conservation: STI is redistributed, not created.
+    \item Natural decay: Attention fades over time.
+    \item Memory bounds: Prevents overflow.
+    \item Knowledge preservation: VLTI and Hebbian links retain critical data.
+\end{itemize}
+
+\subsection{1. Importance Diffusion Agents}
+\textbf{Purpose:} Spread STI among connected atoms using link strengths and probabilities.
+
+\textbf{Core Functions:}
+
+\begin{itemize}[noitemsep]
+    \item \texttt{diffuseAtom} – Orchestrates STI transfer.
+    \item \texttt{incidentAtoms} – Finds connected non-Hebbian atoms.
+    \item \texttt{hebbianAdjacentAtoms} – Identifies Hebbian-linked neighbors.
+    \item \texttt{tradeSti} – Executes STI value exchange.
+\end{itemize}
+
+\textbf{Process:}
+
+\begin{enumerate}[noitemsep]
+    \item Identify connected and Hebbian neighbors.
+    \item Compute transfer probabilities.
+    \item Combine distributions.
+    \item Execute redistribution via \texttt{tradeSti}.
+\end{enumerate}
+
+\textbf{AF Diffusion Agent:}
+Operates within the attentional focus.  
+- Source atoms chosen from AF set.  
+- Transfers a fraction of STI based on a max spread percentage.  
+- Target: Active working memory.
+
+\textbf{WA Diffusion Agent:}
+Operates outside AF.  
+- Selects random non-AF atom.  
+- Diffuses based on predefined amount.  
+- Processes one atom per cycle.
+
+\subsection{2. Rent Collection Agents}
+\textbf{Purpose:} Simulate attention decay over time by reducing STI/LTI.
+
+Implemented in \texttt{AFRentCollectionAgent.metta}. Tracks elapsed time and applies decay proportional to duration.
+
+\textbf{Formulas:}
+\[
+\text{STI Rent} = (\text{calculateStiRent}) \times w
+\]
+\[
+\text{LTI Rent} = (\text{calculateLtiRent}) \times w
+\]
+
+Minimum rent functions prevent negative STI or LTI values.
+
+\textbf{Notes:}
+
+\begin{itemize}[noitemsep]
+    \item Prevents underflow (values never go below zero).
+    \item Models gradual attention fading.
+\end{itemize}
+
+\subsection{3. Forgetting Agent}
+\textbf{Purpose:} Manage memory size by deleting low-importance atoms.
+
+Triggered when:
+\[
+\text{Size} > (\text{maxSize} + \text{accDivSize})
+\]
+
+\textbf{Core Steps:}
+
+\begin{enumerate}[noitemsep]
+    \item Filter atoms with LTI below threshold and VLTI = 0.
+    \item Sort by LTI and truth value.
+    \item Validate before deletion.
+    \item Remove safely and refund STI/LTI to global pool.
+\end{enumerate}
+
+\textbf{Safety Rules:}
+
+\begin{itemize}[noitemsep]
+    \item Preserve atoms with active links.
+    \item Refund deleted atoms' importance values.
+    \item Ensure no dangling references.
+\end{itemize}
+
+\subsection{Agent Integration}
+All agents operate cyclically to maintain balance:
+
+\begin{enumerate}[noitemsep]
+    \item Diffusion redistributes attention.
+    \item Rent collection applies decay.
+    \item Forgetting cleans obsolete atoms.
+\end{enumerate}
+
+Together, they maintain adaptive, stable attention within ECAN.
+
+\end{document}

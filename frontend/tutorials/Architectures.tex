@@ -1,0 +1,334 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\setstretch{1.25}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{mdframed}
+\usepackage{array, booktabs, multirow}
+\usepackage{caption}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+
+% Define Colors
+\definecolor{lightblue}{rgb}{0.90, 0.95, 1.0}
+\definecolor{deepblue}{rgb}{0.2, 0.4, 0.7}
+\definecolor{codebg}{rgb}{0.96, 0.96, 0.96}
+
+% MeTTa Code Environment
+\lstnewenvironment{metta}[1][]{
+    \lstset{
+        language=Lisp,
+        basicstyle=\small\ttfamily,
+        backgroundcolor=\color{codebg},
+        frame=single,
+        framesep=3mm,
+        xleftmargin=5mm,
+        xrightmargin=5mm,
+        breaklines=true,
+        showstringspaces=false,
+        #1
+    }
+}{}
+
+\title{Core Architectures of ECAN}
+\order{3}
+\author{ECAN Team}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document details the core architectures of the Economic Cognitive Attention Network (ECAN), a sophisticated cognitive framework for managing finite computational attention. ECAN implements an economic model of attention allocation across knowledge structures, enabling efficient, adaptive, and psychologically plausible reasoning.
+\end{abstract}
+
+\section{Introduction}
+
+The \textbf{Economic Cognitive Attention Network (ECAN)} represents a comprehensive architecture for attention management in artificial cognitive systems. By treating attention as a finite economic resource and implementing principles from artificial economics, ECAN dynamically allocates computational resources based on the relevance and importance of knowledge units. This document provides a detailed examination of ECAN's core architectural components and their interrelationships.
+
+\section{Core Architectural Components}
+
+\subsection{1. Attentional Focus Management}
+
+\subsubsection{Purpose}
+Attentional Focus is the system's working memory - a limited-capacity space containing what you're actively thinking about RIGHT NOW. It manages the subset of active atoms currently held in the system's cognitive workspace, similar to working memory in the brain.
+
+\subsubsection{Key Concepts}
+\begin{itemize}
+\item Stores the most relevant atoms based on STI (Short-Term Importance)
+\item Keeps track of which atoms are currently being "attended to"
+\item Works dynamically atoms enter or leave the focus as attention shifts
+\end{itemize}
+
+\subsubsection{Main Functions}
+addAtomToAF, removeAtomAttentionalFocus, updateAttentionalFocus, getLowestStiAtomInAF, getRandomAtomInAF
+
+\subsubsection{Spaces Used}
+
+\begin{itemize}
+\item \&attentionalFocus — active atom space
+\item \&newAtomInAV — records newly activated atoms
+\end{itemize}
+
+\subsubsection{Function Roles}
+
+\begin{itemize}
+\item \textbf{addAtomToAF}: Validates and inserts an atom into AF if its STI exceeds the minimum threshold
+\item \textbf{atomIsInAF}: Performs a fast membership check via pattern matching to verify if an atom is already in AF
+\item \textbf{updateAttentionalFocus}: Core logic controlling dynamic updates — decides when to add, retain, or evict atoms
+\item \textbf{getLowestStiAtomInAF}: Finds the atom with the lowest STI to evict when AF is full
+\end{itemize}
+
+\subsubsection{Update Cases}
+
+\begin{itemize}
+\item \textbf{Case 1: AF Not Full}
+  \begin{itemize}
+  \item Condition: size(AF) < MAX\_AF\_SIZE
+  \item Action: Add the atom to AF
+  \end{itemize}
+\item \textbf{Case 2: New > Lowest}
+  \begin{itemize}
+  \item Condition: newSTI > lowestSTI in AF
+  \item Action: Evict the lowest-STI atom and add the new one
+  \end{itemize}
+\item \textbf{Case 3: Below Threshold}
+  \begin{itemize}
+  \item Condition: newSTI ≤ lowestSTI
+  \item Action: Reject the atom (it remains outside AF)
+  \end{itemize}
+\end{itemize}
+
+\subsection{2. Attention Values and STI/LTI System}
+
+\subsubsection{Purpose}
+Implements the economic system of attention — each atom has a certain amount of importance currency allocated to it.
+
+\subsubsection{Core Components}
+
+\begin{itemize}
+\item STI (Short-Term Importance): Measures immediate relevance or activation
+\item LTI (Long-Term Importance): Indicates memory stability and resistance to forgetting
+\item VLTI (Very-Long-Term Importance): Marks deeply ingrained or permanent knowledge
+\end{itemize}
+
+\subsubsection{Storage}
+Stored in \&typeSpace as tuples of (STI, LTI, VLTI) for each atom
+
+\subsubsection{Main Functions}
+
+\begin{itemize}
+\item Setters: setAv, setSti, setLti, setVlti, setStv
+\item Getters: getAv, getSti, getLti, getVlti
+\end{itemize}
+
+\subsubsection{Key Concepts}
+This system is the "attention economy" — the foundation for ECAN's adaptive intelligence.
+
+\begin{itemize}
+\item Increasing STI can push an atom into Attentional Focus
+\item LTI ensures knowledge persistence across cycles
+\item VLTI is like long-term "wisdom" — used rarely but never decays
+\end{itemize}
+
+\subsubsection{System Interfaces}
+
+\begin{itemize}
+\item \textbf{Atom Bins}: updateImportance() on STI change
+\item \textbf{AF}: attentionValueChanged() triggers focus update
+\item \textbf{ForgettingAgent}: removeTypeSpace() cleanup
+\end{itemize}
+
+\subsection{3. Atom Storage and Importance Indexing}
+
+\subsubsection{Purpose}
+Organizes and stores atoms into bins based on their importance levels, allowing for efficient retrieval and update.
+
+\subsubsection{Architecture}
+
+\begin{itemize}
+\item \&atomBin — holds atoms grouped by STI range
+\item \&importanceIndex — provides fast lookup between STI and bins
+\end{itemize}
+
+\subsubsection{Functions}
+insertAtom, removeAtom, updateImportance, relocateAtom
+
+binSize, getSize, getHandleSet
+
+\subsubsection{Function Purposes}
+
+\begin{itemize}
+\item \textbf{insertAtom(bin, atom)}: Duplicate-safe insert
+\item \textbf{removeAtom(bin, atom)}: Clean empty bins
+\item \textbf{updateImportance(oldSTI, newSTI)}: Relocate atom
+\item \textbf{getHandleSet(low, high)}: Range query with STI filtering
+\end{itemize}
+
+\subsubsection{Practical Exercise}
+Run setAv on multiple atoms and observe how getAtomList changes as bins reorganize.
+
+\subsection{4. Core Attention Operations}
+
+\subsubsection{Purpose}
+Defines how attention funds flow across the system — governing how atoms gain, lose, or transfer STI/LTI values.
+
+\subsubsection{Key Functions}
+
+\begin{itemize}
+\item calculateSTIWage, calculateLTIWage – determine how much attention an atom earns per cycle
+\item stimulate – simulates an external or internal attention boost
+\item attentionValueChanged – updates all spaces when AV changes
+\end{itemize}
+
+\subsubsection{Economic Stability Rules}
+
+\begin{itemize}
+\item Attention funds (STI/LTI pools) must remain balanced
+\item Excess or shortage is compensated through rent collection or decay
+\end{itemize}
+
+\subsubsection{Key Concepts}
+This subsystem models cognitive economics — each atom "pays rent" to stay relevant.
+
+\begin{itemize}
+\item If STI drops below threshold, the atom exits Attentional Focus
+\item Can be visualized as a cycle: Stimulate → Update → Redistribute → Decay
+\end{itemize}
+
+\subsection{5. Importance Tracking and Recent Values}
+
+\subsubsection{Purpose}
+Monitors how atom importance changes over time using a decay-based temporal model.
+
+\subsubsection{Core Mechanism}
+\[
+\text{recent} = (\text{decay} \times \text{newValue}) + ((1 - \text{decay}) \times \text{previous})
+\]
+
+\subsubsection{Functions}
+
+\begin{itemize}
+\item updateMin, updateMax — record historical minimum and maximum importance
+\item RecentVal space — stores tracked values for atoms
+\end{itemize}
+
+\subsubsection{Key Concepts}
+This is ECAN's short-term memory trace.
+
+\begin{itemize}
+\item Decay rate determines how fast importance fades when attention is no longer given
+\item Useful for adaptive forgetting and attention shifting
+\end{itemize}
+
+\subsection{6. Stochastic Importance Diffusion}
+
+\subsubsection{Purpose}
+Spreads attention probabilistically among connected atoms mimicking how ideas "spark" related thoughts.
+
+\subsubsection{Core Space}
+\&atomBinInfo — stores metadata like bin size, count, and update rate
+
+\subsubsection{Key Functions}
+updateBin, updateExistingBin, calcElapsedTime, diffusedValue
+
+\subsubsection{Key Notes}
+
+\begin{itemize}
+\item Instead of exact propagation, diffusion uses random sampling for scalability
+\item Models associative thought — e.g., when thinking about "Human," some STI spreads to "Animal" or "Cat"
+\item Used by Whole Atomspace (WA) agents for efficient global diffusion
+\end{itemize}
+
+\subsection{7. Utility Functions}
+
+\subsubsection{Purpose}
+Provides general-purpose operations for handling data structures, lists, and mathematical routines used across ECAN.
+
+\subsubsection{Function Categories}
+
+\begin{itemize}
+\item List/Logic: filter, contains, removeDuplicates, customFilter
+\item Math: abs, ceil, approxEqual
+\item Collections: flatten, concatTuple, reverseExpr
+\end{itemize}
+
+\subsubsection{Key Concepts}
+These are the "tools" that make other modules work smoothly.
+
+\begin{itemize}
+\item Frequently used in STI/LTI calculations, bin management, and diffusion agents
+\item Understanding these helps when writing new MeTTa agents
+\end{itemize}
+
+\subsubsection{Function Categories Breakdown}
+
+\begin{itemize}
+\item \textbf{List Processing}: filter, flatten, removeDuplicates
+\item \textbf{Math}: abs, ceil, approxEqual
+\item \textbf{STI Ops}: getAllMaxSTI, getAllMinSTI
+\item \textbf{Sorting}: quicksort, filterLess/Greater
+\end{itemize}
+
+\section{Summary of Core Relationships}
+
+\subsection{ECAN Subsystem Interdependencies}
+
+\begin{itemize}
+\item \textbf{Attentional Focus}
+  \begin{itemize}
+  \item Main Role: Manages working memory
+  \item Feeds Into: Diffusion, Hebbian Agents
+  \item Depends On: STI Values
+  \end{itemize}
+\item \textbf{Attention Values}
+  \begin{itemize}
+  \item Main Role: Defines cognitive economy
+  \item Feeds Into: Focus, Atom Storage
+  \item Depends On: MindAgents
+  \end{itemize}
+\item \textbf{Atom Storage}
+  \begin{itemize}
+  \item Main Role: Organizes atoms by importance
+  \item Feeds Into: Diffusion, Forgetting
+  \item Depends On: AV System
+  \end{itemize}
+\item \textbf{Core Operations}
+  \begin{itemize}
+  \item Main Role: Controls STI/LTI flow
+  \item Feeds Into: All systems
+  \item Depends On: Economic Layer
+  \end{itemize}
+\item \textbf{Importance Tracking}
+  \begin{itemize}
+  \item Main Role: Monitors temporal change
+  \item Feeds Into: Forgetting
+  \item Depends On: Core Ops
+  \end{itemize}
+\item \textbf{Stochastic Diffusion}
+  \begin{itemize}
+  \item Main Role: Spreads importance probabilistically
+  \item Feeds Into: AV Update
+  \item Depends On: Atom Bins
+  \end{itemize}
+\item \textbf{Utilities}
+  \begin{itemize}
+  \item Main Role: Shared computation support
+  \item Feeds Into: All modules
+  \item Depends On: —
+  \end{itemize}
+\end{itemize}
+
+\section{Conclusion}
+
+The ECAN framework represents a sophisticated approach to cognitive architecture that treats attention as a finite economic resource. Through the coordinated operation of its seven core subsystems—Attentional Focus Management, Attention Values System, Atom Storage, Core Attention Operations, Importance Tracking, Stochastic Diffusion, and Utility Functions—ECAN enables efficient, adaptive, and scalable resource allocation in artificial cognitive systems. The economic principles governing attention allocation create a dynamic balance between stability and flexibility, providing a robust foundation for advanced artificial general intelligence that mirrors the efficiency and adaptability of biological cognitive systems.
+
+\end{document}

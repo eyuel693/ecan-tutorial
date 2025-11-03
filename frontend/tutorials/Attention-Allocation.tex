@@ -1,0 +1,141 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{geometry}  % easy margin control (defaults are fine; optional)
+\geometry{margin=1in}
+\usepackage{setspace}
+\setstretch{1.25}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+
+% ----------- core mathematics -----------
+\usepackage{amsmath}   % align, split, cases, etc.
+\usepackage{amssymb}   % \mathbb, \mathcal, \leqslant, \geqslant ...
+\usepackage{amsfonts}  % blackboard bold, fraktur if desired
+\usepackage{graphicx}  % for future figures, even if none are included yet
+\usepackage{listings}  % for code examples
+\usepackage{hyperref}  % clickable cross-refs; load last
+\usepackage{mdframed}  % for boxed content
+
+% ----------- tables & arrays ------------
+\usepackage{array}     % extended column specifiers in tabular
+\usepackage{booktabs}  % nicer horizontal rules (optional; you may keep \hline)
+\usepackage{multirow}  % multi-row cells if you extend the tables later
+
+% ----------- layout & floats ------------
+
+\usepackage{caption}   % better caption spacing for tables/figures
+\documentclass{article}
+
+% ---------- Required Packages ----------
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{noto}
+
+\geometry{margin=1in}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan
+}
+
+% ---------- Define Colors ----------
+\definecolor{lightblue}{rgb}{0.90, 0.95, 1.0}
+\definecolor{deepblue}{rgb}{0.2, 0.4, 0.7}
+\definecolor{codebg}{rgb}{0.96, 0.96, 0.96}
+
+% ---------- MeTTa Code Environment ----------
+\lstnewenvironment{metta}[1][]{
+    \lstset{
+        language=Lisp,
+        basicstyle=\small\ttfamily,
+        backgroundcolor=\color{codebg},
+        frame=single,
+        framesep=3mm,
+        xleftmargin=5mm,
+        xrightmargin=5mm,
+        breaklines=true,
+        showstringspaces=false,
+        #1
+    }
+}{}
+
+% ---------- Title ----------
+\title{ How Attention Allocation Works in ECAN}
+\order{6}
+\author{ECAN Team}
+\date{October 2025}
+
+\begin{document}
+\maketitle
+
+\section{Overview}
+
+This section explains the flow of attention allocation in the \textbf{Economic Attention Network (ECAN)}.  
+It shows how different cognitive agents collaborate to maintain a focused, adaptive, and energy-efficient cognitive system.
+
+Attention allocation in ECAN is a dynamic feedback process that continuously redistributes cognitive energy 
+based on stimulus, memory persistence, and associative relevance.
+\end{tcolorbox}
+
+\section{Step-by-Step Process}
+
+\subsection{1. Rewarding Useful Atoms}
+
+Atoms receive stimulus from a \textbf{MindAgent} when they contribute to achieving goals.  
+This stimulus is processed by the \textbf{ImportanceUpdatingAgent}, which converts it into two distinct forms of importance:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Short-Term Importance (STI)} — represents immediate activation or priority for processing.
+  \item \textbf{Long-Term Importance (LTI)} — represents lasting knowledge or contextual importance.
+\end{itemize}
+
+\subsection{2. Spreading Importance}
+
+Once STI is established, it spreads among connected atoms via \texttt{HebbianLinks}.  
+This mechanism models associative learning, ensuring that related concepts are activated together.
+
+Two primary agents handle this process:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{ImportanceDiffusionAgent} — spreads STI probabilistically across linked atoms.
+  \item \textbf{ImportanceSpreadingAgent} — performs deterministic spreading for structured attention distribution.
+\end{itemize}
+
+\subsection{3. Updating Hebbian Links}
+
+The \textbf{HebbianUpdatingAgent} continuously modifies the truth value and strength of HebbianLinks 
+based on co-activation within the \textbf{Attentional Focus (AF)}.  
+If two atoms frequently activate together, their connection strengthens; if not, it weakens.
+
+
+\emph{"Neurons that fire together, wire together."}  
+In ECAN, the same principle governs atom connectivity active associations are reinforced dynamically through Hebbian updating.
+\end{tcolorbox}
+
+\subsection{4. Forgetting Mechanism}
+
+To maintain memory efficiency, the \textbf{ForgettingAgent} manages decay and removal of less relevant atoms.  
+This process prevents resource exhaustion and keeps the system adaptive.
+
+\begin{itemize}[leftmargin=*]
+  \item Atoms with LTI below a threshold are gradually pruned.
+  \item Occasionally, higher-LTI atoms are removed to rebalance memory load.
+\end{itemize}
+
+\subsection{5. Creating New Links}
+
+When new atoms enter the \textbf{Attentional Focus}, the \textbf{HebbianCreationModule} forms 
+\texttt{AsymmetricHebbianLinks} between them and other active atoms.  
+This mechanism expands the cognitive network, allowing the system to learn new associations dynamically.
+
+\section{Conclusion}
+Through coordinated operations of multiple agents \textbf{Updating}, \textbf{Diffusion}, \textbf{Forgetting}, 
+and \textbf{Creation} ECAN maintains a self-balancing attention economy that prioritizes relevance, adaptability, 
+and computational efficiency.
+
+
+\end{document}

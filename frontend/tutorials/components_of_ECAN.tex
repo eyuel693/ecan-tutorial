@@ -1,0 +1,408 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\setstretch{1.25}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{mdframed}
+\usepackage{array, booktabs, multirow}
+\usepackage{caption}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+
+% Define Colors
+\definecolor{lightblue}{rgb}{0.90, 0.95, 1.0}
+\definecolor{deepblue}{rgb}{0.2, 0.4, 0.7}
+\definecolor{codebg}{rgb}{0.96, 0.96, 0.96}
+
+% MeTTa Code Environment
+\lstnewenvironment{metta}[1][]{
+    \lstset{
+        language=Lisp,
+        basicstyle=\small\ttfamily,
+        backgroundcolor=\color{codebg},
+        frame=single,
+        framesep=3mm,
+        xleftmargin=5mm,
+        xrightmargin=5mm,
+        breaklines=true,
+        showstringspaces=false,
+        #1
+    }
+}{}
+
+\title{Components of ECAN}
+\order{2}
+\author{ECAN Team}
+\date{October 12, 2025}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document details the core components of the Economic Cognitive Attention Network (ECAN), a cognitive architecture for managing finite computational attention. ECAN treats attention as an economic resource, dynamically allocating it across knowledge structures to enable efficient, adaptive, and psychologically plausible reasoning.
+\end{abstract}
+
+\section{Introduction}
+
+The \textbf{Economic Cognitive Attention Network (ECAN)} is a sophisticated framework for managing and distributing attention in cognitive systems. It employs principles from artificial economics to dynamically allocate computational resources based on the relevance and importance of knowledge units. This document details the core components that constitute the ECAN architecture, from fundamental knowledge representation to the complex dynamics of the Attention Bank.
+
+\section{Core Components of ECAN}
+
+\subsection{1. AtomSpace: The Central Knowledge Repository}
+
+The \textbf{AtomSpace} serves as the central knowledge database, storing all cognitive elements (Atoms) and their relationships. It functions as the system's foundational memory, containing everything from basic concepts to complex relational structures.
+
+\subsubsection{a. Importing the AtomSpace Module}
+\begin{verbatim}
+;; Import required ECAN modules
+!(import! &self metta-attention:attention-bank:bank:attention-bank)
+!(import! &self metta-attention:attention-bank:bank:atom-bins:atombins)
+\end{verbatim}
+
+\subsubsection{b. Creating a New AtomSpace}
+\begin{verbatim}
+;; Create a new AtomSpace
+!(bind! &atom-space (new-space))
+\end{verbatim}
+
+\subsubsection{c. Creating Multiple AtomSpaces}
+Multiple AtomSpaces can be created for different cognitive contexts, such as short-term, long-term, or working memory.
+
+\begin{verbatim}
+;; Create multiple AtomSpaces for different purposes
+!(bind! &short-term-space (new-space))
+!(bind! &long-term-space (new-space))
+!(bind! &working-memory-space (new-space))
+\end{verbatim}
+
+\subsection{2. Atoms: The Fundamental Knowledge Units}
+
+\textbf{Atoms} are the basic units of knowledge within the OpenCog/MeTTa ecosystem. They can represent concepts, statements, relationships, or data points.
+
+\begin{verbatim}
+;; 1. CREATE A NEW KNOWLEDGE BASE
+!(bind! &my-kb (new-space))
+
+;; 2. ADD ATOMS TO THE SPACE
+
+;; Add simple fact atoms
+!(add-atom &my-kb (: fact1 "Earth is a planet"))
+!(add-atom &my-kb (: fact2 "Water is wet"))
+!(add-atom &my-kb (: fact3 "Fire is hot"))
+
+;; Add concept atoms
+!(add-atom &my-kb (: earth (Concept "Planet")))
+!(add-atom &my-kb (: mars (Concept "Planet")))
+!(add-atom &my-kb (: sun (Concept "Star")))
+
+;; Add relationship atoms
+!(add-atom &my-kb (: orbits1 (Inheritance earth sun)))
+!(add-atom &my-kb (: orbits2 (Inheritance mars sun)))
+
+;; 3. QUERY/MATCH ATOMS - BASIC EXAMPLES
+!(match &my-kb $anything $anything)
+!(match &my-kb (: fact1 $content) $content)
+\end{verbatim}
+
+\subsection{3. Attention Values: The Cognitive Priority System}
+
+\textbf{Attention Values (AV)} are numerical vectors associated with each Atom that quantify its cognitive importance. These values guide the system's resource allocation and are dynamically updated. The AV is a tuple:
+\[
+AV = (STI, LTI, VLTI)
+\]
+
+\begin{itemize}
+    \item \textbf{STI (Short-Term Importance):} Measures immediate, task-relevant urgency. High-STI items are processed first.
+    \item \textbf{LTI (Long-Term Importance):} Represents enduring significance, influencing memory retention.
+    \item \textbf{VLTI (Very-Long-Term Importance):} A boolean flag that protects critical knowledge from being forgotten.
+\end{itemize}
+
+\subsubsection{Working with Attention Values}
+\begin{verbatim}
+!(import! &self metta-attention:attention-bank:attention-value:getter-and-setter)
+
+;; Assign and Update Attention Values
+!(setAv A (200 200 0))      ;; Initial AV for atom 'A'
+!(setAv A (400 400 0))      ;; Update AV for 'A'
+!(setAv Cat (400 400 1))    ;; Assign AV for 'Cat' with VLTI=1 (protected)
+
+;; Retrieve AVs
+!(assertEqual (getAv A) (AV 400 400 0))
+!(assertEqual (getAv Cat) (AV 400 400 1))
+\end{verbatim}
+
+\subsubsection{Short-Term Importance (STI) in Detail}
+STI dictates what is important \textbf{right now} or STI measures how immediately relevant or active an atom (concept or data unit) is right now. It is highly dynamic, High-STI items get processed first.
+
+\begin{verbatim}
+!(import! &self metta-attention:attention-bank:attention-value:getter-and-setter)
+!(setAv UrgentTask (90 50 0))    ;; High STI = process first
+!(setAv NormalTask (40 60 0))    ;; Medium priority
+!(setAv LowTask (10 30 0))       ;; Low priority
+
+;; Check STI values
+!(getSti UrgentTask)    ;; → 90
+!(getSti LowTask)       ;; → 10
+
+;; Dynamic STI updates
+!(setSti NormalTask 70) ;; Boost importance
+!(getSti NormalTask)   
+\end{verbatim}
+
+\subsubsection{Long-Term Importance (LTI) in Detail}
+LTI represents sustained importance, governing long-term memory. LTI represents how consistently valuable or frequently activated an atom is over time.
+
+\begin{verbatim}
+!(import! &self metta-attention:attention-bank:attention-value:getter-and-setter)
+!(setAv MyName (50 95 0))       ;; Always remember
+!(setAv HomeAddress (40 90 0))  ;; Important long-term
+
+;; Temporary information - low LTI
+!(setAv TempData (60 10 0))     ;; Can forget soon
+!(setAv TodayWeather (30 5 0))  ;; Very temporary
+
+;; Update LTI
+!(getLti TempData)      ;; → 10
+!(setLti TempData 50)   ;; Decide to remember longer
+!(getLti TempData)    
+\end{verbatim}
+
+\subsubsection{Very Long-Term Importance (VLTI)}
+
+\textbf{VLTI} is a boolean flag that prevents deletion of critical knowledge.
+
+\begin{verbatim}
+!(import! &self metta-attention:attention-bank:attention-value:getter-and-setter)
+!(setAv EmergencyProtocol (70 80 1))  ;; Never forget!
+!(setAv SystemPassword (60 90 1))     ;; Protected
+
+;; Normal knowledge - can be forgotten
+!(setAv CacheData (30 10 0))          ;; Safe to forget
+
+;; Check protection status
+!(getVlti EmergencyProtocol)  ;; → 1 (protected)
+!(getVlti CacheData)          ;; → 0 (can forget)
+\end{verbatim}
+
+\section{4. The Attention Bank}
+
+The \textbf{Attention Bank} is the central architectural component of ECAN that serves as the unified cognitive resource manager. It solves the core cognitive problem: \textbf{How to manage finite attention resources across infinite potential knowledge in a computationally efficient and psychologically plausible way.}
+
+It implements a multi-component architecture for storing, organizing, and processing knowledge under economic constraints.
+
+\subsection{Core Components of the Attention Bank}
+
+\subsubsection{4.1. TypeSpace: The Metadata Repository}
+
+\textbf{Definition:} A specialized space that stores all metadata about knowledge elements.
+
+\textbf{Primary Functions:}
+
+\begin{itemize}
+    \item \textbf{Property Storage:} Maintains \texttt{(atom (AV STI LTI VLTI))} for attention metadata.
+    \item \textbf{Truth Tracking:} Stores truth values \texttt{(atom (STV mean confidence))} for belief quantification.
+    \item \textbf{Relationship Registry:} Contains all Hebbian links and other relational structures.
+    \item \textbf{Type Management:} Handles atom typing and property inheritance.
+\end{itemize}
+
+\subsubsection{4.2. Atom Bins: The Organized Knowledge Store}
+
+\textbf{Definition:} A structured storage system that organizes all Atoms into importance-based containers using a sparse matrix architecture. It functions as the system's organized library, with all knowledge sorted by relevance for efficient access.
+
+\textbf{Primary Functions:}
+
+\begin{itemize}
+    \item \textbf{Importance-Based Organization:} Groups atoms into bins based on their STI values (e.g., on a 1-100 scale).
+    \item \textbf{Efficient Retrieval:} Enables quick access to atoms within specific importance ranges.
+    \item \textbf{Stochastic Sampling:} Supports probabilistic selection for diffusion operations.
+    \item \textbf{Memory Management:} Provides the structural basis for the Forgetting Agent's operations.
+\end{itemize}
+
+\begin{verbatim}
+!(import! &self metta-attention:attention-bank:bank:atom-bins:atombins)
+!(add-atom &atombin (1 (a Cat (Hebbianlink Human Cat))))
+!(add-atom &atombin (2 (d Animal (Hebbianlink (Hebbianlink Human Cat) Animal))))
+!(add-atom &atombin (3 (m)))
+
+!(setAv H (200 200 0))
+!(insertAtom  20.0 H)
+!(assertEqual (match &atombin (20.0 $x) $x) (H E))
+
+!(assertEqual (removeAtom 20.0 H) True)
+!(assertEqual (match &atombin (20.0 $x) $x) (E (EvaluationLink a b)))
+\end{verbatim}
+
+
+\subsubsection{4.3. Attentional Focus: The Working Memory}
+
+\textbf{Definition:} A limited-capacity space containing the subset of knowledge elements currently receiving active cognitive processing. This is the "spotlight of consciousness" within ECAN.
+
+\textbf{Primary Functions:}
+
+\begin{itemize}
+    \item \textbf{Active Processing:} Hosts atoms involved in current reasoning and decision-making.
+    \item \textbf{Capacity Management:} Enforces a \texttt{MAX\_AF\_SIZE} constraint through replacement policies.
+    \item \textbf{Priority Enforcement:} Always contains the highest-STI atoms in the system.
+    \item \textbf{Agent Coordination:} Serves as the primary input for most Mind Agents.
+\end{itemize}
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:AttentionParam)
+!(import! &self metta-attention:attention-bank:utilities:helper-functions)
+!(import! &self metta-attention:attention-bank:attention-value:getter-and-setter)
+!(import! &self metta-attention:attention-bank:bank:atom-bins:atombins)
+!(import! &self metta-attention:attention-bank:bank:attention-bank)
+!(import! &self metta-attention:attention-bank:bank:attentional-focus:attentional-focus)
+!(import! &self metta-attention:attention-bank:bank:importance-index:importance-index)
+
+!(setAv a (1.0 0.0 0.0))
+!(setAv d (7.0 4.0 0.0))
+!(setAv c (0.0 0.0 0.0))
+!(setAv A (100.0 200.0 300.0))
+!(setAv B (50.0 150.0 250.0))
+!(setAv C (200.0 300.0 400.0))
+
+!(getAttentionParam MAX_AF_SIZE)
+!(assertEqual(attentionalFocusSize) 6)
+!(assertEqual (atomIsInAF C) True)
+!(assertEqual (getLowestStiAtomInAF) c)
+!(setAv a (300.0 400.0 500.0))
+!(assertEqual (updateAttentionalFocus a) True)
+
+
+\end{verbatim}
+
+\subsection{Supporting Architectural Components}
+
+\subsubsection{4.4. Importance Index Module}
+
+\textbf{Definition:} The computational engine that calculates bin assignments and manages the organizational structure of the Atom Bins.
+
+\textbf{Key Functions:}
+
+\begin{itemize}
+    \item \textbf{STI-to-Bin Mapping:} Converts continuous STI values to discrete bin numbers.
+    \item \textbf{Range Query Support:} Enables efficient "importance range" operations.
+    \item \textbf{Dynamic Reassignment:} Updates bin positions when STI values change.
+    \item \textbf{Global Tracking:} Maintains system-wide min/max STI statistics.
+\end{itemize}
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:AttentionParam)
+!(import! &self metta-attention:attention-bank:utilities:helper-functions)
+!(import! &self metta-attention:attention-bank:attention-value:getter-and-setter)
+!(import! &self metta-attention:attention-bank:bank:atom-bins:atombins)
+!(import! &self metta-attention:attention-bank:bank:attention-bank)
+!(import! &self metta-attention:attention-bank:bank:attentional-focus:attentional-focus)
+!(import! &self metta-attention:attention-bank:bank:importance-index:importance-index)
+
+!(setAv a (2.0 2.0 2.0))
+!(setAv d (4.0 2.0 2.0))
+!(setAv c (3.0 2.0 2.0))
+!(setAv x (200.0 200.0 0.0))
+!(setAv (EvaluationLink a b) (20 20 0)) 
+!(setAv another (25 25 0)) 
+!(setAv Animals (30 30 1)) 
+!(setAv (Hebbianlink (Hebbianlink Human Cat)  Animal) (40 40 1))
+!(setAv something   (80 80 1))
+!(add-atom &atombin (1 (a)))
+!(add-atom &atombin (10 (d)))
+!(add-atom &atombin (18 (c)))
+
+!(assertEqual (importanceBin -5.0)  0.0)    ; Should return 0
+!(assertEqual (importanceBin 10.0)   10.0)   ; Should return 10 (direct assignment)
+!(assertEqual (importanceBin 20.0)  20.0)    ; Should calculate based on group logic 18
+!(assertEqual (importanceBin 50.0) 29.0)
+
+
+\end{verbatim}
+
+\subsubsection{4.5. Stochastic Importance Diffusion}
+
+\textbf{Definition:} The probabilistic mechanism for spreading attention through the knowledge network using sampling rather than exhaustive processing. This is a key efficiency innovation.
+
+\textbf{Key Functions:}
+
+\begin{itemize}
+    \item \textbf{Efficient Spreading:} Uses random sampling of connections instead of processing all links, conserving resources.
+    \item \textbf{Probability Weighting:} Stronger Hebbian links have a higher probability of diffusion.
+    \item \textbf{Resource Conservation:} Maintains attention conservation within economic operations.
+    \item \textbf{Exploration-Exploitation Balance:} Combines reliable pathways with occasional novel associations.
+\end{itemize}
+
+\subsubsection{4.6. Economic Engine}
+
+\textbf{Definition:} The resource management system that treats attention as a finite currency using economic principles.
+
+\textbf{Key Functions:}
+
+\begin{itemize}
+    \item \textbf{Fund Management:} Tracks available STI/LTI resources (\texttt{FUNDS\_STI, FUNDS\_LTI}).
+    \item \textbf{Wage System:} Controls attention allocation to newly created knowledge.
+    \item \textbf{Rent Collection:} Periodically recovers attention from existing knowledge to be redistributed.
+    \item \textbf{Economic Regulation:} Maintains system-wide balance through target levels (\texttt{TARGET\_STI/LTI}).
+\end{itemize}
+
+\subsection{Interaction Flow}
+
+The power of ECAN emerges from the interaction of these components:
+
+\begin{enumerate}
+    \item An Atom enters the system and is registered in the \textbf{TypeSpace}.
+    \item It is assigned an initial AV and placed into the appropriate \textbf{Atom Bin} by the \textbf{Importance Index}.
+    \item If its STI is high enough, it enters the \textbf{Attentional Focus}.
+    \item \textbf{Mind Agents} (see below) operate on the Attentional Focus, modifying Atoms and their AVs.
+    \item \textbf{Stochastic Importance Diffusion} spreads activation to related Atoms.
+    \item The \textbf{Economic Engine} collects rent and redistributes funds, ensuring no single Atom can monopolize attention.
+    \item Atoms with persistently low LTI may be removed by the Forgetting Agent, unless protected by VLTI.
+\end{enumerate}
+
+\subsection{5. Mind Agents: The Cognitive Processes}
+
+\textbf{Mind Agents} are autonomous processes that implement specific cognitive functions by modifying AtomSpace contents and Attention Values according to defined rules. They are the "workers" that bring the static knowledge to life.
+
+\subsubsection{Key Mind Agents:}
+\begin{itemize}
+    \item \textbf{Hebbian Creation/Updating Agent:} Creates and strengthens links between co-active Atoms.
+    \item \textbf{Importance Diffusion Agents:} Spread STI from the Attentional Focus (AF) and the wider AtomSpace (WA).
+    \item \textbf{Rent Collection Agents:} Recover STI from Atoms in the AF and WA for redistribution.
+    \item \textbf{Forgetting Agent:} Removes Atoms with very low LTI that are not protected (VLTI=0).
+\end{itemize}
+
+\begin{verbatim}
+!(import! &self metta-attention:attention:HebbianUpdatingAgent:HebbianUpdatingAgent)
+!(import! &self metta-attention:attention:HebbianCreationAgent:HebbianCreationAgent)
+!(import! &self metta-attention:attention:ImportanceDiffusionAgent:AFImportanceDiffusionAgent:AFImportanceDiffusionAgent)
+!(import! &self metta-attention:attention:RentCollectionAgent:AFRentCollectionAgent:AFRentCollectionAgent)
+!(import! &self metta-attention:attention:ForgettingAgent:ForgettingAgent)
+
+(= (run-cognitive-cycle)
+    (superpose 
+        (
+            (HebbianUpdatingAgent-Run (TypeSpace))
+            (HebbianCreationAgent-Run (TypeSpace) (attentionalFocus) (newAtomInAV))
+            (AFImportanceDiffusionAgent-Run (attentionalFocus) (TypeSpace))
+            (AFRentCollectionAgent-run)
+            (ForgettingAgent-Run (atomBin))
+        )
+    )
+)
+\end{verbatim}
+
+\subsection{6. CogServer and Scheduler: Central Orchestration}
+
+The \textbf{CogServer} serves as the central runtime environment and coordination layer. The \textbf{Scheduler}, a component of the CogServer, determines the execution order and frequency of Mind Agents, often based on the system's current attentional state, ensuring optimal cognitive performance.
+
+\section{Conclusion}
+
+The ECAN framework provides a comprehensive and biologically-inspired architecture for attention management in artificial cognitive systems. Through the coordinated operation of its components the AtomSpace, Atoms, Attention Values, the \textbf{Attention Bank} with its specialized sub-components, Mind Agents, and the CogServer ECAN enables efficient, adaptive, and scalable resource allocation. By treating attention as a finite economic commodity, it achieves a dynamic balance between stability and flexibility, forming a robust foundation for advanced artificial general intelligence.
+
+\end{document}
