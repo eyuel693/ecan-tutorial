@@ -1,15 +1,15 @@
 services:
   - type: web
-    name: pm-backend
+    name: attention-backend
     env: python
+    rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: python app.py
-    rootDir: backend
 
   - type: web
-    name: pm-frontend
+    name: attention-frontend
     env: node
-    rootDir: frontend 
-    buildCommand: "pnpm install && pnpm build"
-    startCommand: "pnpm start"
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     autoDeploy: true
