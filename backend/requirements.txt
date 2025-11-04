@@ -1,5 +1,6 @@
 flask
 flask-cors
+gunicorn
 hyperon==0.2.2
 gunicorn
 regex
