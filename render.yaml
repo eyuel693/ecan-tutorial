@@ -7,10 +7,10 @@ services:
     buildCommand: python3 -m pip install --upgrade pip && pip install -r requirements.txt
     startCommand: gunicorn app:app
 
-  - type: static
+  - type: web
     name: attention-frontend
     env: node
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: ./build
+    startCommand: npm run start
     autoDeploy: true
