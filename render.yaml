@@ -2,15 +2,15 @@ services:
   - type: web
     name: attention-backend
     env: python
-    buildCommand: python3 -m pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: python3 app.py
     rootDir: backend
-    
+    plan: standard
+    buildCommand: python3 -m pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn app:app
 
-  - type: web
+  - type: static
     name: attention-frontend
     env: node
     rootDir: frontend
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    staticPublishPath: ./build
     autoDeploy: true
